@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Configuração da página (Modificado para wide para melhor aproveitamento visual)
+# Configuração da página
 st.set_page_config(
-    page_title="Conversor de Extrato - Domínio",
+    page_title="Conversor de Extrato - Hachimitsu",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -27,12 +27,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Cabeçalho Principal
-st.title("📊 Conversor de Extratos para o Domínio Web")
-st.markdown(
-    "Faça o upload da sua planilha de extrato bancário para gerar o arquivo CSV"
-    " formatado corretamente."
-)
+# Cabeçalho Principal Atualizado
+st.title("📊 Conversor de Extratos - Hachimitsu")
+st.markdown("Faça o upload do extrato bancário para gerar o arquivo CSV.")
 st.markdown("---")
 
 # 1. Upload do arquivo dentro de um container elegante
@@ -57,9 +54,9 @@ if uploaded_file is not None:
 
     st.markdown("---")
 
-    # Bloco de configuração dentro de um container com borda
+    # Bloco de configuração dentro de um container com borda (Título ajustado)
     with st.container(border=True):
-      st.subheader("⚙️ Configuração das Contas no Domínio")
+      st.subheader("⚙️ Configuração das contas")
 
       # Mapeamento dinâmico dos bancos encontrados
       mapeamento_contas = {}
@@ -170,24 +167,42 @@ if uploaded_file is not None:
             "Historico": df["Historico"],
         })
 
+        # Armazenamos também o valor com sinal para calcular separadamente Entradas e Saídas
+        df_final["Valor_Com_Sinal"] = df["VALOR_NUM"]
+
         # 6. Geração do CSV em memória com delimitador ponto e vírgula (sep=';')
         csv_buffer = io.StringIO()
-        df_final.to_csv(
+        df_final.drop(columns=["Valor_Com_Sinal"]).to_csv(
             csv_buffer, sep=";", index=False, decimal=",", encoding="cp1252"
         )
         csv_data = csv_buffer.getvalue()
 
         st.success("✨ Arquivo convertido com sucesso!")
 
-        # Métricas de resumo executivo
-        m1, m2 = st.columns(2)
+        # Métricas de resumo executivo divididas (Total de lançamentos, Entradas e Saídas)
+        m1, m2, m3 = st.columns(3)
+
         with m1:
           st.metric("Total de Lançamentos", len(df_final))
+
         with m2:
-          val_total = df_final["Valor"].sum()
+          total_entradas = df_final[df_final["Valor_Com_Sinal"] > 0][
+              "Valor"
+          ].sum()
           st.metric(
-              "Volume Processado",
-              f"R$ {val_total:,.2f}".replace(",", "X")
+              "Total de Entradas",
+              f"R$ {total_entradas:,.2f}".replace(",", "X")
+              .replace(".", ",")
+              .replace("X", "."),
+          )
+
+        with m3:
+          total_saidas = df_final[df_final["Valor_Com_Sinal"] < 0][
+              "Valor"
+          ].sum()
+          st.metric(
+              "Total de Saídas",
+              f"R$ {total_saidas:,.2f}".replace(",", "X")
               .replace(".", ",")
               .replace("X", "."),
           )
@@ -195,7 +210,10 @@ if uploaded_file is not None:
         # Mostra uma prévia na tela dentro de um container
         with st.container(border=True):
           st.subheader("👀 Prévia dos Primeiros Lançamentos")
-          st.dataframe(df_final.head(15), use_container_width=True)
+          st.dataframe(
+              df_final.drop(columns=["Valor_Com_Sinal"]).head(15),
+              use_container_width=True,
+          )
 
         # Botão de Download em largura total
         st.download_button(
