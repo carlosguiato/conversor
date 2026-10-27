@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Estilização CSS refinada para um visual mais limpo e moderno
+# Estilização CSS corrigida para o Dark Mode (fundo escuro nos cards e texto visível)
 st.markdown(
     """
     <style>
@@ -22,13 +22,20 @@ st.markdown(
         padding-top: 2rem;
         padding-bottom: 3rem;
     }
-    /* Estilo customizado para os cards métricos */
+    /* Estilo dos cards métricos adaptado para tema escuro */
     div[data-testid="stMetric"] {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background-color: #1e293b;
+        border: 1px solid #334155;
         padding: 15px;
         border-radius: 10px;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    }
+    /* Garante que os rótulos e valores das métricas fiquem claros */
+    div[data-testid="stMetric"] label {
+        color: #94a3b8 !important;
+    }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+        color: #f8fafc !important;
     }
     </style>
 """,
@@ -69,7 +76,7 @@ if uploaded_file is not None:
     with st.container(border=True):
       st.markdown("### ⚙️ Configuração das contas")
       st.markdown(
-          "<p style='color: #64748b; font-size: 14px; margin-bottom: 20px;'>Defina"
+          "<p style='color: #94a3b8; font-size: 14px; margin-bottom: 20px;'>Defina"
           " os códigos correspondentes para o mapeamento contábil.</p>",
           unsafe_allow_html=True,
       )
