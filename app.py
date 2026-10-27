@@ -6,12 +6,12 @@ import streamlit as st
 # Configuração da página
 st.set_page_config(
     page_title="Conversor de Extrato - Hachimitsu",
-    page_icon="📊",
+    page_icon="🌸",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Estilização CSS para remover elementos padrão do Streamlit e refinar o visual
+# Estilização CSS refinada para um visual mais limpo e moderno
 st.markdown(
     """
     <style>
@@ -20,21 +20,32 @@ st.markdown(
     header {visibility: hidden;}
     .block-container {
         padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-bottom: 3rem;
+    }
+    /* Estilo customizado para os cards métricos */
+    div[data-testid="stMetric"] {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Cabeçalho Principal Atualizado
-st.title("📊 Conversor de Extratos - Hachimitsu")
-st.markdown("Faça o upload do extrato bancário para gerar o arquivo CSV.")
+# Cabeçalho Principal com subtítulo elegante
+st.title("🌸 Conversor de Extratos - Hachimitsu")
+st.markdown(
+    "Faça o upload do extrato bancário para gerar o arquivo CSV formatado"
+    " perfeitamente para o Domínio Web."
+)
 st.markdown("---")
 
 # 1. Upload do arquivo dentro de um container elegante
 with st.container(border=True):
-  st.subheader("📁 Importação de Dados")
+  st.markdown("### 📁 Passo 1: Importação de Dados")
   uploaded_file = st.file_uploader(
       "Selecione o arquivo Excel do extrato (.xlsx, .xls)", type=["xlsx", "xls"]
   )
@@ -52,11 +63,16 @@ if uploaded_file is not None:
     if "Conta bancária" in df.columns:
       contas_encontradas = df["Conta bancária"].dropna().unique()
 
-    st.markdown("---")
+    st.markdown("")
 
-    # Bloco de configuração dentro de um container com borda (Título ajustado)
+    # Bloco de configuração dentro de um container com borda
     with st.container(border=True):
-      st.subheader("⚙️ Configuração das contas")
+      st.markdown("### ⚙️ Configuração das contas")
+      st.markdown(
+          "<p style='color: #64748b; font-size: 14px; margin-bottom: 20px;'>Defina"
+          " os códigos correspondentes para o mapeamento contábil.</p>",
+          unsafe_allow_html=True,
+      )
 
       # Mapeamento dinâmico dos bancos encontrados
       mapeamento_contas = {}
@@ -71,6 +87,8 @@ if uploaded_file is not None:
             " padrão '9'."
         )
 
+      st.markdown("---")
+
       # Configuração das contas transitórias
       col1, col2 = st.columns(2)
       with col1:
@@ -82,7 +100,7 @@ if uploaded_file is not None:
             "Contra conta para **ENTRADAS** (Clientes / > 0):", value=""
         )
 
-    st.markdown("---")
+    st.markdown("")
 
     # Botão para processar centralizado e em destaque
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
@@ -167,7 +185,6 @@ if uploaded_file is not None:
             "Historico": df["Historico"],
         })
 
-        # Armazenamos também o valor com sinal para calcular separadamente Entradas e Saídas
         df_final["Valor_Com_Sinal"] = df["VALOR_NUM"]
 
         # 6. Geração do CSV em memória com delimitador ponto e vírgula (sep=';')
@@ -179,18 +196,19 @@ if uploaded_file is not None:
 
         st.success("✨ Arquivo convertido com sucesso!")
 
-        # Métricas de resumo executivo divididas (Total de lançamentos, Entradas e Saídas)
+        # Métricas de resumo executivo divididas com caixas customizadas
+        st.markdown("")
         m1, m2, m3 = st.columns(3)
 
         with m1:
-          st.metric("Total de Lançamentos", len(df_final))
+          st.metric("📊 Total de Lançamentos", len(df_final))
 
         with m2:
           total_entradas = df_final[df_final["Valor_Com_Sinal"] > 0][
               "Valor"
           ].sum()
           st.metric(
-              "Total de Entradas",
+              "📥 Total de Entradas",
               f"R$ {total_entradas:,.2f}".replace(",", "X")
               .replace(".", ",")
               .replace("X", "."),
@@ -201,21 +219,24 @@ if uploaded_file is not None:
               "Valor"
           ].sum()
           st.metric(
-              "Total de Saídas",
+              "📤 Total de Saídas",
               f"R$ {total_saidas:,.2f}".replace(",", "X")
               .replace(".", ",")
               .replace("X", "."),
           )
 
+        st.markdown("")
+
         # Mostra uma prévia na tela dentro de um container
         with st.container(border=True):
-          st.subheader("👀 Prévia dos Primeiros Lançamentos")
+          st.markdown("### 👀 Prévia dos Primeiros Lançamentos")
           st.dataframe(
               df_final.drop(columns=["Valor_Com_Sinal"]).head(15),
               use_container_width=True,
           )
 
-        # Botão de Download em largura total
+        # Botão de Download em largura total com destaque extra
+        st.markdown("")
         st.download_button(
             label="📥 Baixar Arquivo CSV para o Domínio",
             data=csv_data.encode("cp1252", errors="replace"),
